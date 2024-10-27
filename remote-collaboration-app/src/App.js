@@ -3,7 +3,7 @@ import './App.css';
 import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import Dashboard from './pages/Dashboard';
 import Signup from './pages/Signup';
@@ -16,18 +16,27 @@ function App() {
     useEffect(
         () => {
             const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-                console.log("Current user:", currentUser);
                 setUser(currentUser);
             });
             return () => unsubscribe(); //Clean Up the listener on unmount
         }, []
     );
 
+    const handleLogout = async() => {
+        try{
+            await signOut(auth);
+            alert("You've been logged out successfully!");
+        } catch(error){
+            console.error("Logout Error: ", error);
+        }
+    };
+
   return (
     <Router>
         <nav>
             <Link to="/">Home</Link> | <Link to="/dashboard">Dashboard</Link> |
             <Link to="/signup">Signup</Link> | <Link to="/login">Login</Link>
+            {user && <button onClick={handleLogout}>Logout</button>}
         </nav>
         <Routes>
             <Route path="/" element={<Home />} />
