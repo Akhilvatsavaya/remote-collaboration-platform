@@ -1,8 +1,20 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
-dotenv.config();
+const taskRoutes = require('./routes/taskRoutes');
+
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log("Connected to MongoDB"))
+.catch((error) => console.error("MongoDB connection error:", error));
+
+
+
 const app = express();
 
 //Middleware
@@ -13,9 +25,10 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('Backend server is running');
 });
-app.get('/api/tasks', (req, res) => {
-    res.json({tasks : ['Task 1', 'Task 2', 'Task 3']});
-});
+
+//Use task Routes
+app.use('/api', taskRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+
