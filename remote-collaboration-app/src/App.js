@@ -40,10 +40,12 @@ function App() {
         </nav>
         <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-                path="/dashboard"
-                element={user ? <Dashboard /> : <Navigate to="/login" replace />}
-            />
+            {/* Conditional route for dashboard based on user authentication */}
+                    {user ? (
+                      <Route path="/dashboard" element={<Dashboard />} />
+                    ) : (
+                      <Route path="/dashboard" element={<Navigate to="/login" replace />} />
+                    )}
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
         </Routes>

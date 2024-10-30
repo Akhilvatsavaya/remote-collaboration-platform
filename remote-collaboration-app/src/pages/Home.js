@@ -20,8 +20,12 @@ const Home = () => {
             <p>This is the home page of our application.</p>
             <h2>Tasks</h2>
             <ul>
-                {tasks.map((task, index) => (
-                    <li key={index}>{task}</li>
+                {tasks.map((task) => (
+                    <li key={task._id}>
+                        <h4>{task.title}</h4>
+                        <p>{task.description}</p>
+                        <p>Status: {task.status}</p>
+                    </li>
                 ))}
             </ul>
         </div>
