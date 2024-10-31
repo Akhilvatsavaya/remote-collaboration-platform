@@ -24,4 +24,19 @@ router.get('/tasks', async(req, res) => {
     }
 });
 
+
+// Update an existing task by Id
+router.put('/tasks/:id', async (req, res) => {
+    try{
+        const updatedTask = await Task.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new : true } //Returns the updated document
+        );
+        res.json(updatedTask);
+    }catch(error) {
+        res.status(500).json({messge: "Error updating task", error});
+    }
+})
+
 module.exports = router;

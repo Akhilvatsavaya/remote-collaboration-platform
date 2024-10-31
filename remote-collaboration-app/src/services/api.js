@@ -29,3 +29,19 @@ export const addTask = async(task) => {
         return null;
     }
 };
+
+//Update task
+export const updateTask = async(id, updatedData) => {
+    try{
+        const response = await fetch(`${BASE_URL}/tasks/${id}`, {
+            method : 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData),
+        });
+        const data = await response.json();
+        return data;
+    }catch (error){
+        console.error('Error updating task: ', error);
+        return null;
+    }
+};

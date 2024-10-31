@@ -1,22 +1,27 @@
 import React, {useEffect, useState} from 'react';
 import {auth} from '../firebase';
-import {fetchTasks, addTask} from '../services/api';
+import {fetchTasks, addTask, updateTask} from '../services/api';
+import './Dashboard.css';
 
 const Dashboard = () => {
     const user = auth.currentUser;
     const [tasks, setTasks] = useState([]);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTaskId, setEditTaskId] = useState(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
 
     //Fetch tasks when component loads
     useEffect(() => {
         const getTasks = async () => {
             const tasksFromServer = await fetchTasks();
-            console.log("Fetched Tasks:", tasksFromServer); // Log once for debug
-            setTasks(Array.isArray(tasksFromServer) ? tasksFromServer : []);
+//            console.log("Fetched Tasks:", tasksFromServer); // Log once for debug
+            setTasks(tasksFromServer);
         };
         getTasks();
-    }, []); // Empty array to ensure it runs only once
+    }, []);
 
 
     //Handle form submission to add a Task
@@ -31,42 +36,66 @@ const Dashboard = () => {
         }
     };
 
+    // Start editing the task
+    const startEditing = (task) => {
+        setIsEditing(true);
+        setEditTaskId(task._id);
+        setEditTitle(task.title);
+        setEditDescription(task.description);
+    };
+
+    // Handle the update submission
+    const handleUpdateTask = async(e) => {
+        e.preventDefault();
+        const updatedTask = {title: editTitle, description: editDescription};
+        const result = await updateTask(editTaskId, updatedTask);
+        if(result){
+            setTasks(tasks.map(task => task._id === editTaskId ? result : task));
+            setIsEditing(false);
+            setEditTaskId(null);
+            setEditTitle('');
+            setEditDescription('');
+        }
+    };
+
     return (
-        <div style={{ padding : '20px' }}>
-            <h1>Dashboard</h1>
-            <h2>Welcome to your Task Manager</h2>
+        <div className="dashboard-container">
+            <div className = "dashboard-header">
+                <h1>Dashboard</h1>
+                <h2>Welcome to your Task Manager</h2>
+            </div>
 
             {/* Task Form */}
-            <section style={{ marginBottom: '30px' }}>
-                <h3>Add New Task</h3>
-                <form onSubmit = {handleAddTask}>
+            <section className = "task-form">
+                <h3>{isEditing ? "Edit Task" : "Add New Task"}</h3>
+                <form onSubmit = {isEditing ? handleUpdateTask : handleAddTask}>
                     <input
                         type="text"
                         placeholder = "Task Title"
-                        value = {title}
-                        onChange = {(e) => setTitle(e.target.value)}
+                        value = {isEditing ? editTitle : title}
+                        onChange = {(e) => isEditing ? setEditTitle(e.target.value) : setTitle(e.target.value)}
                         required
                     />
                     <textarea
                         placeholder="Task Description"
-                        value={description}
-                        onChange= {(e) => setDescription(e.target.value)}
+                        value={isEditing ? editDescription : description}
+                        onChange= {(e) => isEditing ? setEditDescription(e.target.value) : setDescription(e.target.value)}
                     ></textarea>
-                    <button type="submit">Add Task</button>
+                    <button type="submit">{isEditing ? "Update Task" : "Add Task"}</button>
                 </form>
             </section>
 
             {/* Task List */}
-            <section>
+            <section className = "task-list">
                 <h3>Task List</h3>
                 <ul>
-                    {tasks.map((task, index) => {
-                        console.log("Rendering Task:", task); // Confirm individual task object structure
+                    {tasks.map((task) => {
                         return (
-                            <li key={task._id || index}> {/* Add a fallback key for index */}
-                                <h4>{task.title || "No Title"}</h4>
-                                <p>{task.description || "No Description"}</p>
-                                <p>Status: {task.status || "Unknown Status"}</p>
+                            <li key={task._id}>
+                                <h4>{task.title}</h4>
+                                <p>{task.description}</p>
+                                <p>Status: {task.status}</p>
+                                <button onClick={() => startEditing(task)}>Edit</button>
                             </li>
                         );
                     })}
