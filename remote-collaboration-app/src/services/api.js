@@ -45,3 +45,16 @@ export const updateTask = async(id, updatedData) => {
         return null;
     }
 };
+
+export const deleteTask = async(id) => {
+    try{
+        const response = await fetch(`${BASE_URL}/tasks/${id}`, {
+            method: 'DELETE',
+        });
+        const data = await response.json();
+        return data;
+    } catch(error) {
+        console.error('Error deleting task : ', error);
+        return null;
+    }
+};

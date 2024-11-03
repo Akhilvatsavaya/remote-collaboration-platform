@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {auth} from '../firebase';
-import {fetchTasks, addTask, updateTask} from '../services/api';
+import {fetchTasks, addTask, updateTask, deleteTask} from '../services/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -58,6 +58,14 @@ const Dashboard = () => {
         }
     };
 
+    // Handle task deletion
+    const handleDeleteTask = async(id) => {
+        const response = await deleteTask(id);
+        if( response && response.message === "Task deleted successfully") {
+            setTasks(tasks.filter(task => task._id !== id));
+        }
+    };
+
     return (
         <div className="dashboard-container">
             <div className = "dashboard-header">
@@ -96,6 +104,9 @@ const Dashboard = () => {
                                 <p>{task.description}</p>
                                 <p>Status: {task.status}</p>
                                 <button onClick={() => startEditing(task)}>Edit</button>
+                                <button onClick = {() => handleDeleteTask(task._id)} style={{marginLeft: '10px', backgroundColor: '#dc3545'}}>
+                                    Delete
+                                </button>
                             </li>
                         );
                     })}
