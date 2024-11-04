@@ -3,6 +3,10 @@ import {auth} from '../firebase';
 import {fetchTasks, addTask, updateTask, deleteTask} from '../services/api';
 import './Dashboard.css';
 
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
+
 const Dashboard = () => {
     const user = auth.currentUser;
     const [tasks, setTasks] = useState([]);
@@ -17,12 +21,32 @@ const Dashboard = () => {
     useEffect(() => {
         const getTasks = async () => {
             const tasksFromServer = await fetchTasks();
-//            console.log("Fetched Tasks:", tasksFromServer); // Log once for debug
             setTasks(tasksFromServer);
         };
         getTasks();
-    }, []);
 
+        // Listen for real-time task updates
+        socket.on('taskAdded', (newTask) => {
+          setTasks((prevTasks) => [...prevTasks, newTask]);
+        });
+
+        socket.on('taskUpdated', (updatedTask) => {
+          setTasks((prevTasks) =>
+            prevTasks.map((task) => (task._id === updatedTask._id ? updatedTask : task))
+          );
+        });
+
+        socket.on('taskDeleted', (taskId) => {
+          setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+        });
+
+        // Clean up on component unmount
+        return () => {
+          socket.off('taskAdded');
+          socket.off('taskUpdated');
+          socket.off('taskDeleted');
+        };
+    }, []);
 
     //Handle form submission to add a Task
     const handleAddTask = async(e) => {
